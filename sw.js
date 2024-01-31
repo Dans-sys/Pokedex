@@ -9,10 +9,10 @@ self.addEventListener('install', (event) => {
             .then((cache) => {
                 return cache.addAll([
                     // '/',
-                    '/manifest.json',
-                    '/index.html',
-                    '/css/main.css',
-                    '/js/main.js',
+                    'manifest.json',
+                    'index.html',
+                    'css/main.css',
+                    'js/main.js',
                     'https://pokeapi.co/api/v2/pokemon/'
                 ]);
             })
