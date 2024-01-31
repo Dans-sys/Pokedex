@@ -8,7 +8,8 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 return cache.addAll([
-                    // '/',
+                    '/',
+                    '/manifest.json',
                     '/index.html',
                     '/css/main.css',
                     '/js/main.js',
@@ -29,6 +30,8 @@ self.addEventListener('fetch', (event) => {
                 }
 
                 // Si no está en la caché, realiza la solicitud de red
+
+                // console.log(event.request);
                 return fetch(event.request)
                     .then((response) => {
                         // Verifica si la respuesta es válida
@@ -37,14 +40,21 @@ self.addEventListener('fetch', (event) => {
                         }
 
                         // Almacena la respuesta en la caché antes de devolverla
-                        const responseToCache = response.clone();
                         caches.open(CACHE_NAME)
                             .then((cache) => {
-                                cache.put(event.request, responseToCache);
+                                cache.put(event.request, response.clone());
                             });
 
                         return response;
+                    })
+                    .catch((fetchError) => {
+                        console.error('Error en la solicitud de red:', fetchError);
+                        throw fetchError;
                     });
+            })
+            .catch((cacheMatchError) => {
+                console.error('Error al buscar en la caché:', cacheMatchError);
+                throw cacheMatchError;
             })
     );
 });
