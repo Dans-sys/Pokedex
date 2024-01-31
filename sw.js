@@ -12,8 +12,8 @@ self.addEventListener('install', (event) => {
                     '/manifest.json',
                     '/index.html',
                     '/css/main.css',
-                    '/js/main.js',
-                    'https://pokeapi.co/api/v2/pokemon/'
+                    '/js/main.js'
+                    // ,'https://pokeapi.co/api/v2/pokemon/'
                 ]);
             })
     );
