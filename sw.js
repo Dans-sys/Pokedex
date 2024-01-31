@@ -8,12 +8,12 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 return cache.addAll([
-                    '/',
+                    // '/',
                     '/manifest.json',
                     '/index.html',
                     '/css/main.css',
-                    '/js/main.js'
-                    // ,'https://pokeapi.co/api/v2/pokemon/'
+                    '/js/main.js',
+                    'https://pokeapi.co/api/v2/pokemon/'
                 ]);
             })
     );
@@ -33,28 +33,23 @@ self.addEventListener('fetch', (event) => {
 
                 // console.log(event.request);
                 return fetch(event.request)
-                    .then((response) => {
-                        // Verifica si la respuesta es válida
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-
-                        // Almacena la respuesta en la caché antes de devolverla
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, response.clone());
-                            });
-
+                .then((response) => {
+                    if (!response || response.status !== 200 || response.type !== 'basic') {
                         return response;
-                    })
-                    .catch((fetchError) => {
-                        console.error('Error en la solicitud de red:', fetchError);
-                        throw fetchError;
-                    });
-            })
-            .catch((cacheMatchError) => {
-                console.error('Error al buscar en la caché:', cacheMatchError);
-                throw cacheMatchError;
+                    }
+            
+                    return caches.open(CACHE_NAME)
+                        .then((cache) => {
+                            return cache.put(event.request, response.clone());
+                        })
+                        .then(() => {
+                            return response;
+                        });
+                })
+                .catch((fetchError) => {
+                    console.error('Error en la solicitud de red:', fetchError);
+                    throw fetchError;
+                });
             })
     );
 });
