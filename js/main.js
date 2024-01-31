@@ -24,28 +24,54 @@ document.addEventListener('DOMContentLoaded', function () {
     const listaPokemon = document.querySelector("#listaPokemon");
     const botonesHeader = document.querySelectorAll(".btn-header");
     let URL = "https://pokeapi.co/api/v2/pokemon/";
+    let URL2 = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"
 
     function fetchPokemonData(i) {
-        return caches.match(URL + i)
-            .then((cachedResponse) => {
-                if (cachedResponse) {
-                    return cachedResponse.json();
-                } else {
-                    return fetch(URL + i)
+        const pokemonDataCacheKey = URL + i;
+        const pokemonImageCacheKey = URL2 + i + ".png";
+
+        return Promise.all([
+            caches.match(pokemonDataCacheKey),
+            caches.match(pokemonImageCacheKey)
+        ]).then(([cachedDataResponse, cachedImageResponse]) => {
+            if (cachedDataResponse && cachedImageResponse) {
+                return Promise.all([cachedDataResponse.json(), cachedImageResponse.blob()]);
+            } else {
+                return Promise.all([
+                    fetch(pokemonDataCacheKey)
                         .then((response) => {
                             if (!response.ok) {
-                                throw new Error(`Failed to fetch: ${URL + i}`);
+                                throw new Error(`Failed to fetch: ${pokemonDataCacheKey}`);
                             }
                             const responseToCache = response.clone();
                             caches.open('pokemon-cache-v2')
                                 .then((cache) => {
-                                    cache.put(URL + i, responseToCache);
+                                    cache.put(pokemonDataCacheKey, responseToCache);
                                 });
                             return response.json();
-                        });
-                }
-            });
+                        }),
+                    fetch(pokemonImageCacheKey)
+                        .then((response) => {
+                            if (!response.ok) {
+                                throw new Error(`Failed to fetch: ${pokemonImageCacheKey}`);
+                            }
+                            const responseToCache = response.clone();
+                            caches.open('pokemon-cache-v2')
+                                .then((cache) => {
+                                    cache.put(pokemonImageCacheKey, responseToCache);
+                                });
+                            return response.blob();
+                        })
+                ]);
+            }
+        }).then(([jsonData, imageBlob]) => {
+            // Haz algo con los datos y la imagen aquí
+            console.log(jsonData);
+            console.log(imageBlob);
+        });
     }
+
+
 
     function mostrarPokemon(poke) {
         let tipos = poke.types.map((type) => `<p class="${type.type.name} tipo">${type.type.name}</p>`);
